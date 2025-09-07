@@ -1,55 +1,62 @@
 import mongoose from "mongoose";
+import bcrypt from "bcrypt";          // <--- add this
+import jwt from "jsonwebtoken";       // <--- and this
 
 const userSchema = new mongoose.Schema({
   username: {
     type: String,
-    required: true,
   },
   email: {
     type: String,
     required: true,
     unique: true,
+    index: true
   },
   password: {
     type: String,
-    required: true,
+  },
+  authType: {
+    type: String,
   },
   age: {
     type: Number,
-    required: true,
+    // required: true,
+  },
+  status: {
+    type: String,
+    enum: ["pending", "completed"],
+    default: "pending",
   },
   income: {
     sources: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: "Income",
     }],
-    required: true,
+    // required: true,
   },
   expenses: {
     categories: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: "Expense",
     }],
-    required: true,
+    // required: true,
   },
   assets: {
     bankBalance: {
       type: Number,
-      required: true,
+      // required: true,
     },
     investments: {
       type: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: "Investment",
     }],
-      required: false,
     },
-    otherAssets: {
+    otherAssets: { 
       type: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: "Investment",
     }],
-      required: false,
     },
   },
   liabilities: {
@@ -58,32 +65,27 @@ const userSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Loan",
     }],
-      required: false,
     },
     creditCards: {
       type: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: "CreditCard",
     }],
-      required: false,
     },
   },
   insurance: {
     lifeInsurance: {
       coverageAmount: { type: Number},
       premium: { type: Number},
-      required: false,
     },
     healthInsurance: {
       coverageAmount: { type: Number},
       premium: { type: Number},
-      required: false,
     },
   },
   dependents: {
     count: {
       type: Number,
-      required: false,
       default: 0,
     },
     details: {
@@ -91,7 +93,6 @@ const userSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Dependent",
     }],
-      required: false,
     },
   },
   goals: {
@@ -99,19 +100,36 @@ const userSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Goal",
     }],
-    required: false,
   },
   emergencyFund: {
     type: Number,
-    required: false,
     default: 0,
   },
   creditScore: {
     type: Number,
-    required: false,
   },
 },{
     timestamps: true
 });
+
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) return next();
+
+  this.password = await bcrypt.hash(this.password, 10);
+  next();
+});
+
+userSchema.methods.isPasswordCorrect = async function (password) {
+  return await bcrypt.compare(password, this.password);
+};
+
+userSchema.methods.generateAuthToken = async function () {
+  const token = await jwt.sign(
+    { _id: this._id },
+    process.env.JWT_TOKEN_SECRET,
+    { expiresIn: "10d" }
+  );
+  return token;
+};
 
 export const User = mongoose.model("User", userSchema);
