@@ -1,5 +1,4 @@
 import { User } from "../models/user.model.js";
-import {asyncHandler} from '../utils/asyncHandler.js'
 
 const isUserExists = async (email) => {
   const user = await User.findOne({ email });
@@ -33,4 +32,21 @@ const createNewUser = async (email, authType, password) => {
   }
 };
 
-export { isUserExists, userStatus, createNewUser };
+const updateUserName = async (userId, username) => {
+  try {
+    const user = await User.findByIdAndUpdate(userId, { username: username });
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+const updateAge = async (userId, age) => {
+  try {
+    const user = await User.findByIdAndUpdate(userId, {age : age});
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+
+export { isUserExists, userStatus, createNewUser, updateUserName, updateAge };

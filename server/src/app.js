@@ -1,6 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import oauthRouter from "./routes/oauth.routes.js"
+import userRouter from "./routes/user.routes.js"
 import passport from "passport";
 import session from 'express-session'
 import './controllers/oauth.controller.js'
@@ -27,5 +28,6 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use("/oauth", oauthRouter);
+app.use("/user", userRouter);
 
 export { app }
