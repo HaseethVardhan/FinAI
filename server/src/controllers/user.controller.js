@@ -645,6 +645,20 @@ const getDashboardSummary = asyncHandler(async (req, res) => {
     );
 });
 
+const changeStatus = asyncHandler(async (req, res) => {
+  const user = req.user;
+
+  user.status = "completed";
+
+  await user.save({ validateModifiedOnly: true });
+
+  return res
+  .status(200)
+  .json(
+    new ApiResponse(200, {}, "Success")
+  )
+})
+
 export { 
   updateUserNameAndAge, 
   updateIncomeDetails, 
@@ -662,5 +676,6 @@ export {
   getInsurance,
   getDependents,
   getOtherDetails,
-  getDashboardSummary
+  getDashboardSummary,
+  changeStatus
 };

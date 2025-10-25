@@ -25,7 +25,7 @@ const FinalPage: React.FC = () => {
 
   const navigate = useNavigate();
 
-  const handleSaveChanges = async() => {
+  const handleSaveChanges = async () => {
     if (!finalData.emergencyFund && !finalData.creditScore) {
       setError("Please fill at least one field before saving.");
       return;
@@ -38,6 +38,16 @@ const FinalPage: React.FC = () => {
         emergencyFund: finalData.emergencyFund,
         creditScore: finalData.creditScore,
       },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+
+    const stat = await axios.post(
+      `${import.meta.env.VITE_BASE_URL}/user/changeStatus`,
+      {},
       {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
