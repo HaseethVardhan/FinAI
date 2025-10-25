@@ -3,7 +3,6 @@ import Navigation from "../landingPageComponents/Navigation";
 import Hero from "../landingPageComponents/Hero";
 import Features from "../landingPageComponents/Features";
 import HowItWorks from "../landingPageComponents/HowItWorks";
-//import CTA from "../landingPageComponents/CTA";
 import Footer from "../landingPageComponents/Footer";
 
 const Landing: React.FC = () => {
@@ -13,7 +12,6 @@ const Landing: React.FC = () => {
       <Hero />
       <Features />
       <HowItWorks />
-      {/*<CTA />*/}
       <Footer />
     </div>
   );
