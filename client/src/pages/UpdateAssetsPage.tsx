@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Wallet, Plus, Trash2, Edit2 } from "lucide-react";
 import Button from "../uiComponents/Button";
-import { useNavigate } from "react-router-dom"; // ✅ Import navigate
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 interface Investment {
   id: string;
@@ -203,7 +204,7 @@ const AssetsPage: React.FC = () => {
     setErr("");
   };
 
-  const handleSaveChanges = () => {
+  const handleSaveChanges = async () => {
     let valid = true;
     const newErrors = { bankBalance: "" };
 
@@ -219,7 +220,21 @@ const AssetsPage: React.FC = () => {
 
     if (!valid) return;
 
-    console.log("Assets Data:", assetsData);
+    const response = await axios.post(
+      `${import.meta.env.VITE_BASE_URL}/user/updateAssets`,
+      {
+        bankBalance: assetsData.bankBalance,
+        investments: assetsData.investments,
+        otherAssets: assetsData.otherAssets,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+
+    console.log(response)
     navigate("/liabilities", { replace: true }); // ✅ Navigate to the liabilities page
   };
 

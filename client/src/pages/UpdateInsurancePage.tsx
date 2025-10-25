@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Shield } from "lucide-react";
 import Button from "../uiComponents/Button";
+import axios from "axios";
 import { replace, useNavigate } from "react-router-dom"; // ✅ Import navigate
 const InsurancePage: React.FC = () => {
   const navigate = useNavigate(); // ✅ hook for navigation
@@ -51,7 +52,7 @@ const InsurancePage: React.FC = () => {
     return Object.values(obj).every((val) => val === "");
   };
 
-  const handleSaveChanges = () => {
+  const handleSaveChanges = async() => {
     if (
       isEmpty(insuranceData.lifeInsurance) &&
       isEmpty(insuranceData.healthInsurance)
@@ -62,7 +63,18 @@ const InsurancePage: React.FC = () => {
 
     setError(""); // clear error
 
-    console.log("Insurance Data:", insuranceData);
+    const response = await axios.post(
+      `${import.meta.env.VITE_BASE_URL}/user/updateInsurance`,
+      {
+        lifeInsurance: insuranceData.lifeInsurance,
+        healthInsurance: insuranceData.healthInsurance,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
     navigate("/dependents", { replace: true });
   };
 

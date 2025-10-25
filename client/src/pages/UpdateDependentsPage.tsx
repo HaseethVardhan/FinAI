@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Users, Plus, Trash2, Edit2 } from "lucide-react";
 import Button from "../uiComponents/Button";
 import { useNavigate } from "react-router-dom"; // ✅ Import navigate
+import axios from "axios";
 
 interface Dependent {
   id: string;
@@ -127,7 +128,7 @@ const DependentsPage: React.FC = () => {
     setError(""); // Clear error if all validations pass
   };
 
-  const handleSaveChanges = () => {
+  const handleSaveChanges = async () => {
     if (dependentsData.count === 0) {
       setError(
         "⚠️ Please add at least one dependent or click Skip to proceed."
@@ -135,7 +136,20 @@ const DependentsPage: React.FC = () => {
       return;
     }
     setError(""); // Clear any existing errors
-    console.log("Dependents Data:", dependentsData);
+
+    const response = await axios.post(
+      `${import.meta.env.VITE_BASE_URL}/user/updateDependents`,
+      {
+        details: dependentsData.dependents,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+
+    console.log(response);
     navigate("/final", { replace: true }); // Navigate to final page after saving
   };
 

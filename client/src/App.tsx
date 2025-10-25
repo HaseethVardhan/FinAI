@@ -12,6 +12,7 @@ import LiabilitiesPage from "./pages/UpdateLiabilitiesPage";
 import InsurancePage from "./pages/UpdateInsurancePage";
 import DependentsPage from "./pages/UpdateDependentsPage";
 import FinalPage from "./pages/UpdateFinalPage";
+import CompleteProfile from "./pages/CompleteProfile";
 
 function App() {
   return (
@@ -37,6 +38,7 @@ function App() {
         <Route path="/insurance" element={<InsurancePage />} />
         <Route path="/dependents" element={<DependentsPage />} />
         <Route path="/final" element={<FinalPage />} />
+        <Route path="/complete-profile" element={<CompleteProfile />} />
       </Routes>
     </>
   );

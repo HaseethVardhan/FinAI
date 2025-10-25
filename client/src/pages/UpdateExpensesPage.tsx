@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { CreditCard, Plus, Trash2, Edit2 } from "lucide-react";
 import Button from "../uiComponents/Button";
 import { useNavigate } from "react-router-dom"; // ✅ Import navigate
+import axios from "axios";
 
 interface ExpenseCategory {
   id: string;
@@ -106,13 +107,27 @@ const ExpensesPage: React.FC = () => {
     setEditingExpense({ name: "", amount: "" });
   };
 
-  const handleSaveChanges = () => {
+  const handleSaveChanges = async () => {
     if (expenseCategories.length === 0) {
       setError("⚠️ Please add at least one expense category before saving.");
       return;
     }
     setError(""); // clear error
     console.log("Expense Categories:", expenseCategories);
+
+    const response = await axios.post(
+      `${import.meta.env.VITE_BASE_URL}/user/updateExpenseDetails`,
+      {
+        expenseDetails: expenseCategories,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+
+    console.log(response);
     navigate("/assets", { replace: true }); // ✅ Navigate to Assets page
   };
 

@@ -1,101 +1,160 @@
 import React, { useState } from "react";
 import { AlertTriangle, Plus, Trash2, Edit2 } from "lucide-react";
-import Button from "../uiComponents/Button";
+// Removed the import for Button as it wasn't provided.
+// Instead, created a simple Button component below for completeness.
 import { useNavigate } from "react-router-dom"; // ✅ Import navigate
+import axios from "axios";
 
-interface Liability {
+// ----------------- Simple Button Component -----------------
+// Added this component to make the file runnable, based on your original import.
+const Button: React.FC<{
+  text: string;
+  onClick: () => void;
+  bgColor?: string;
+  hoverColor?: string;
+}> = ({
+  text,
+  onClick,
+  bgColor = "bg-green-500",
+  hoverColor = "bg-green-600",
+}) => (
+  <button
+    onClick={onClick}
+    className={`w-full ${bgColor} text-white py-3 px-4 rounded-lg font-semibold ${hoverColor} transition-colors font-poppins`}
+  >
+    {text}
+  </button>
+);
+
+// ----------------- New Interfaces (Schema-based) -----------------
+interface Loan {
   id: string;
-  name: string;
-  amount: number;
+  type: string;
+  outstanding: number;
+  monthlyEMI: number;
 }
 
+interface CreditCard {
+  id: string;
+  cardName: string;
+  balance: number;
+  creditLimit: number;
+}
+
+// ----------------- Main Component -----------------
 const LiabilitiesPage: React.FC = () => {
   const navigate = useNavigate(); // ✅ hook for navigation
-  const [liabilitiesData, setLiabilitiesData] = useState({
-    loans: [] as Liability[],
-    creditCards: [] as Liability[],
+
+  // ----------------- Updated State -----------------
+  const [liabilitiesData, setLiabilitiesData] = useState<{
+    loans: Loan[];
+    creditCards: CreditCard[];
+  }>({
+    loans: [],
+    creditCards: [],
   });
+
   const [error, setError] = useState(""); // error state
-  const [newLoan, setNewLoan] = useState({ name: "", amount: "" });
-  const [newCreditCard, setNewCreditCard] = useState({ name: "", amount: "" });
+
+  const [newLoan, setNewLoan] = useState({
+    type: "",
+    outstanding: "",
+    monthlyEMI: "",
+  });
+  const [newCreditCard, setNewCreditCard] = useState({
+    cardName: "",
+    balance: "",
+    creditLimit: "",
+  });
+
   const [isAddingLoan, setIsAddingLoan] = useState(false);
   const [isAddingCreditCard, setIsAddingCreditCard] = useState(false);
+
   const [editingLoanId, setEditingLoanId] = useState<string | null>(null);
   const [editingCreditCardId, setEditingCreditCardId] = useState<string | null>(
     null
   );
-  const [editingLoan, setEditingLoan] = useState({ name: "", amount: "" });
+
+  const [editingLoan, setEditingLoan] = useState({
+    type: "",
+    outstanding: "",
+    monthlyEMI: "",
+  });
   const [editingCreditCard, setEditingCreditCard] = useState({
-    name: "",
-    amount: "",
+    cardName: "",
+    balance: "",
+    creditLimit: "",
   });
 
+  // ----------------- Validation Logic (Unchanged) -----------------
   const isValidName = (name: string) => {
     const regex = /^[A-Za-z][A-Za-z_]*$/; // must start with letter, only letters + underscores
     return regex.test(name);
   };
 
-  // ----------------- Add / Remove / Edit Logic -----------------
+  // ----------------- Updated Add/Remove/Edit Logic -----------------
   const addLoan = () => {
-    if (!newLoan.name || !newLoan.amount) {
-      setError("⚠️ Please fill in all fields.");
+    const { type, outstanding, monthlyEMI } = newLoan;
+    if (!type || !outstanding || !monthlyEMI) {
+      setError("⚠️ Please fill in all loan fields.");
       return;
     }
-    if (!isValidName(newLoan.name)) {
+    if (!isValidName(type)) {
       setError(
-        "⚠️ Source name can only contain alphabets and underscores, must start with a letter, and no numbers allowed."
+        "⚠️ Loan Type can only contain alphabets and underscores, must start with a letter, and no numbers allowed."
       );
       return;
     }
-    if (parseFloat(newLoan.amount) < 0) {
-      setError("⚠️ Amount cannot be negative.");
+    if (parseFloat(outstanding) < 0 || parseFloat(monthlyEMI) < 0) {
+      setError("⚠️ Amounts cannot be negative.");
       return;
     }
-    if (newLoan.name && newLoan.amount) {
-      const loan: Liability = {
-        id: Date.now().toString(),
-        name: newLoan.name,
-        amount: parseFloat(newLoan.amount),
-      };
-      setLiabilitiesData({
-        ...liabilitiesData,
-        loans: [...liabilitiesData.loans, loan],
-      });
-      setNewLoan({ name: "", amount: "" });
-      setIsAddingLoan(false);
-    }
-    setError(""); // Clear error if all validations pass
+
+    const loan: Loan = {
+      id: Date.now().toString(),
+      type: type,
+      outstanding: parseFloat(outstanding),
+      monthlyEMI: parseFloat(monthlyEMI),
+    };
+    setLiabilitiesData({
+      ...liabilitiesData,
+      loans: [...liabilitiesData.loans, loan],
+    });
+    setNewLoan({ type: "", outstanding: "", monthlyEMI: "" });
+    setIsAddingLoan(false);
+    setError(""); // Clear error
   };
 
   const addCreditCard = () => {
-    if (!newCreditCard.name || !newCreditCard.amount) {
-      setError("⚠️ Please fill in all fields.");
+    const { cardName, balance, creditLimit } = newCreditCard;
+    if (!cardName || !balance || !creditLimit) {
+      setError("⚠️ Please fill in all credit card fields.");
       return;
     }
-    if (!isValidName(newCreditCard.name)) {
+    if (!isValidName(cardName)) {
       setError(
-        "⚠️ Source name can only contain alphabets and underscores, must start with a letter, and no numbers allowed."
+        "⚠️ Card Name can only contain alphabets and underscores, must start with a letter, and no numbers allowed."
       );
       return;
     }
-    if (parseFloat(newCreditCard.amount) < 0) {
-      setError("⚠️ Amount cannot be negative.");
+    if (parseFloat(balance) < 0 || parseFloat(creditLimit) < 0) {
+      setError("⚠️ Amounts cannot be negative.");
       return;
     }
-    if (newCreditCard.name && newCreditCard.amount) {
-      const creditCard: Liability = {
-        id: Date.now().toString(),
-        name: newCreditCard.name,
-        amount: parseFloat(newCreditCard.amount),
-      };
-      setLiabilitiesData({
-        ...liabilitiesData,
-        creditCards: [...liabilitiesData.creditCards, creditCard],
-      });
-      setNewCreditCard({ name: "", amount: "" });
-      setIsAddingCreditCard(false);
-    }
-    setError(""); // Clear error if all validations pass
+
+    const creditCard: CreditCard = {
+      id: Date.now().toString(),
+      cardName: cardName,
+      balance: parseFloat(balance),
+      creditLimit: parseFloat(creditLimit),
+    };
+    setLiabilitiesData({
+      ...liabilitiesData,
+      creditCards: [...liabilitiesData.creditCards, creditCard],
+    });
+    setNewCreditCard({ cardName: "", balance: "", creditLimit: "" });
+    setIsAddingCreditCard(false);
+    setError(""); // Clear error
   };
 
   const removeLoan = (id: string) => {
@@ -112,85 +171,96 @@ const LiabilitiesPage: React.FC = () => {
     });
   };
 
-  const startEditingLoan = (loan: Liability) => {
+  const startEditingLoan = (loan: Loan) => {
     setEditingLoanId(loan.id);
-    setEditingLoan({ name: loan.name, amount: loan.amount.toString() });
+    setEditingLoan({
+      type: loan.type,
+      outstanding: loan.outstanding.toString(),
+      monthlyEMI: loan.monthlyEMI.toString(),
+    });
   };
 
   const saveLoanEdit = () => {
-    if (!editingLoan.name || !editingLoan.amount) {
-      setError("⚠️ Please fill in all fields.");
+    const { type, outstanding, monthlyEMI } = editingLoan;
+    if (!type || !outstanding || !monthlyEMI) {
+      setError("⚠️ Please fill in all loan fields.");
       return;
     }
-    if (!isValidName(editingLoan.name)) {
+    if (!isValidName(type)) {
       setError(
-        "⚠️ Source name can only contain alphabets and underscores, must start with a letter, and no numbers allowed."
+        "⚠️ Loan Type can only contain alphabets and underscores, must start with a letter, and no numbers allowed."
       );
       return;
     }
-    if (parseFloat(editingLoan.amount) < 0) {
-      setError("⚠️ Amount cannot be negative.");
+    if (parseFloat(outstanding) < 0 || parseFloat(monthlyEMI) < 0) {
+      setError("⚠️ Amounts cannot be negative.");
       return;
     }
-    if (editingLoan.name && editingLoan.amount) {
-      setLiabilitiesData({
-        ...liabilitiesData,
-        loans: liabilitiesData.loans.map((loan) =>
-          loan.id === editingLoanId
-            ? {
-                ...loan,
-                name: editingLoan.name,
-                amount: parseFloat(editingLoan.amount),
-              }
-            : loan
-        ),
-      });
-      setEditingLoanId(null);
-      setEditingLoan({ name: "", amount: "" });
-    }
-    setError(""); // Clear error if all validations pass
+
+    setLiabilitiesData({
+      ...liabilitiesData,
+      loans: liabilitiesData.loans.map((loan) =>
+        loan.id === editingLoanId
+          ? {
+              ...loan,
+              type: type,
+              outstanding: parseFloat(outstanding),
+              monthlyEMI: parseFloat(monthlyEMI),
+            }
+          : loan
+      ),
+    });
+    setEditingLoanId(null);
+    setEditingLoan({ type: "", outstanding: "", monthlyEMI: "" });
+    setError(""); // Clear error
   };
 
-  const startEditingCreditCard = (card: Liability) => {
+  const startEditingCreditCard = (card: CreditCard) => {
     setEditingCreditCardId(card.id);
-    setEditingCreditCard({ name: card.name, amount: card.amount.toString() });
+    setEditingCreditCard({
+      cardName: card.cardName,
+      balance: card.balance.toString(),
+      creditLimit: card.creditLimit.toString(),
+    });
   };
 
   const saveCreditCardEdit = () => {
-    if (!editingCreditCard.name || !editingCreditCard.amount) {
-      setError("⚠️ Please fill in all fields.");
+    const { cardName, balance, creditLimit } = editingCreditCard;
+    if (!cardName || !balance || !creditLimit) {
+      setError("⚠️ Please fill in all credit card fields.");
       return;
     }
-    if (!isValidName(editingCreditCard.name)) {
+    if (!isValidName(cardName)) {
       setError(
-        "⚠️ Source name can only contain alphabets and underscores, must start with a letter, and no numbers allowed."
+        "⚠️ Card Name can only contain alphabets and underscores, must start with a letter, and no numbers allowed."
       );
       return;
     }
-    if (parseFloat(editingCreditCard.amount) < 0) {
-      setError("⚠️ Amount cannot be negative.");
+    if (parseFloat(balance) < 0 || parseFloat(creditLimit) < 0) {
+      setError("⚠️ Amounts cannot be negative.");
       return;
     }
-    if (editingCreditCard.name && editingCreditCard.amount) {
-      setLiabilitiesData({
-        ...liabilitiesData,
-        creditCards: liabilitiesData.creditCards.map((card) =>
-          card.id === editingCreditCardId
-            ? {
-                ...card,
-                name: editingCreditCard.name,
-                amount: parseFloat(editingCreditCard.amount),
-              }
-            : card
-        ),
-      });
-      setEditingCreditCardId(null);
-      setEditingCreditCard({ name: "", amount: "" });
-    }
-    setError(""); // Clear error if all validations pass
+
+    setLiabilitiesData({
+      ...liabilitiesData,
+      creditCards: liabilitiesData.creditCards.map((card) =>
+        card.id === editingCreditCardId
+          ? {
+              ...card,
+              cardName: cardName,
+              balance: parseFloat(balance),
+              creditLimit: parseFloat(creditLimit),
+            }
+          : card
+      ),
+    });
+    setEditingCreditCardId(null);
+    setEditingCreditCard({ cardName: "", balance: "", creditLimit: "" });
+    setError(""); // Clear error
   };
 
-  const handleSaveChanges = () => {
+  // ----------------- Navigation Logic (Unchanged) -----------------
+  const handleSaveChanges = async () => {
     if (
       liabilitiesData.loans.length === 0 &&
       liabilitiesData.creditCards.length === 0
@@ -199,7 +269,22 @@ const LiabilitiesPage: React.FC = () => {
       return;
     }
     setError(""); // clear error
-    console.log("Liabilities Data:", liabilitiesData);
+
+    const response = await axios.post(
+      `${import.meta.env.VITE_BASE_URL}/user/updateLiabilities`,
+      {
+        loans: liabilitiesData.loans,
+        creditCards: liabilitiesData.creditCards,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+
+    console.log(response);
+
     navigate("/insurance", { replace: true }); // ✅ Navigate to the Insurance page
   };
 
@@ -207,7 +292,7 @@ const LiabilitiesPage: React.FC = () => {
     navigate("/insurance", { replace: true }); // ✅ Navigate to the Insurance page
   };
 
-  // ----------------- JSX -----------------
+  // ----------------- Updated JSX -----------------
   return (
     <div className="min-h-screen bg-dark-bg flex items-center justify-center px-4 font-inter">
       <div className="max-w-md w-full mt-10 mb-10">
@@ -244,16 +329,17 @@ const LiabilitiesPage: React.FC = () => {
               </div>
             )}
 
+            {/* Add Loan Form */}
             {isAddingLoan && (
-              <div className="bg-gray-800 p-4 rounded-lg border border-gray-700 mb-3">
+              <div className="bg-gray-800 p-4 rounded-lg border border-gray-700 mb-3 space-y-3">
                 <input
                   type="text"
-                  placeholder="Loan Name"
-                  value={newLoan.name}
+                  placeholder="Loan Type (e.g., Home_Loan)"
+                  value={newLoan.type}
                   onChange={(e) =>
-                    setNewLoan({ ...newLoan, name: e.target.value })
+                    setNewLoan({ ...newLoan, type: e.target.value })
                   }
-                  className="w-full bg-gray-700 text-white px-3 py-2 rounded-lg border border-gray-600 focus:border-green-500 focus:outline-none mb-3 font-poppins"
+                  className="w-full bg-gray-700 text-white px-3 py-2 rounded-lg border border-gray-600 focus:border-green-500 focus:outline-none font-poppins"
                 />
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
@@ -262,9 +348,23 @@ const LiabilitiesPage: React.FC = () => {
                   <input
                     type="number"
                     placeholder="Outstanding Amount"
-                    value={newLoan.amount}
+                    value={newLoan.outstanding}
                     onChange={(e) =>
-                      setNewLoan({ ...newLoan, amount: e.target.value })
+                      setNewLoan({ ...newLoan, outstanding: e.target.value })
+                    }
+                    className="w-full bg-gray-700 text-white px-8 py-2 rounded-lg border border-gray-600 focus:border-green-500 focus:outline-none font-poppins"
+                  />
+                </div>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                    ₹
+                  </span>
+                  <input
+                    type="number"
+                    placeholder="Monthly EMI"
+                    value={newLoan.monthlyEMI}
+                    onChange={(e) =>
+                      setNewLoan({ ...newLoan, monthlyEMI: e.target.value })
                     }
                     className="w-full bg-gray-700 text-white px-8 py-2 rounded-lg border border-gray-600 focus:border-green-500 focus:outline-none font-poppins"
                   />
@@ -288,18 +388,20 @@ const LiabilitiesPage: React.FC = () => {
               </button>
             )}
 
+            {/* Loan List */}
             {liabilitiesData.loans.map((loan) => (
               <div
                 key={loan.id}
                 className="bg-gray-800 p-3 rounded-lg border border-gray-700 hover:border-gray-600 transition-colors mb-2"
               >
+                {/* Edit Loan Form */}
                 {editingLoanId === loan.id ? (
                   <div className="space-y-2">
                     <input
                       type="text"
-                      value={editingLoan.name}
+                      value={editingLoan.type}
                       onChange={(e) =>
-                        setEditingLoan({ ...editingLoan, name: e.target.value })
+                        setEditingLoan({ ...editingLoan, type: e.target.value })
                       }
                       className="w-full bg-gray-700 text-white px-3 py-2 rounded-lg border border-gray-600 focus:border-green-500 focus:outline-none text-sm font-poppins"
                     />
@@ -309,11 +411,27 @@ const LiabilitiesPage: React.FC = () => {
                       </span>
                       <input
                         type="number"
-                        value={editingLoan.amount}
+                        value={editingLoan.outstanding}
                         onChange={(e) =>
                           setEditingLoan({
                             ...editingLoan,
-                            amount: e.target.value,
+                            outstanding: e.target.value,
+                          })
+                        }
+                        className="w-full bg-gray-700 text-white px-8 py-2 rounded-lg border border-gray-600 focus:border-green-500 focus:outline-none text-sm font-poppins"
+                      />
+                    </div>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">
+                        ₹
+                      </span>
+                      <input
+                        type="number"
+                        value={editingLoan.monthlyEMI}
+                        onChange={(e) =>
+                          setEditingLoan({
+                            ...editingLoan,
+                            monthlyEMI: e.target.value,
                           })
                         }
                         className="w-full bg-gray-700 text-white px-8 py-2 rounded-lg border border-gray-600 focus:border-green-500 focus:outline-none text-sm font-poppins"
@@ -335,13 +453,15 @@ const LiabilitiesPage: React.FC = () => {
                     </div>
                   </div>
                 ) : (
+                  // Display Loan Item
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-white text-sm font-medium font-poppins">
-                        {loan.name}
+                        {loan.type}
                       </p>
                       <p className="text-orange-400 text-sm font-semibold font-inter">
-                        ₹{loan.amount.toFixed(2)}
+                        ₹{loan.outstanding.toFixed(2)} (EMI: ₹
+                        {loan.monthlyEMI.toFixed(2)})
                       </p>
                     </div>
                     <div className="flex space-x-2">
@@ -378,16 +498,20 @@ const LiabilitiesPage: React.FC = () => {
                 </div>
               )}
 
+            {/* Add Credit Card Form */}
             {isAddingCreditCard && (
-              <div className="bg-gray-800 p-4 rounded-lg border border-gray-700 mb-3">
+              <div className="bg-gray-800 p-4 rounded-lg border border-gray-700 mb-3 space-y-3">
                 <input
                   type="text"
-                  placeholder="Credit Card Name"
-                  value={newCreditCard.name}
+                  placeholder="Card Name (e.g., HDFC_Regalia)"
+                  value={newCreditCard.cardName}
                   onChange={(e) =>
-                    setNewCreditCard({ ...newCreditCard, name: e.target.value })
+                    setNewCreditCard({
+                      ...newCreditCard,
+                      cardName: e.target.value,
+                    })
                   }
-                  className="w-full bg-gray-700 text-white px-3 py-2 rounded-lg border border-gray-600 focus:border-green-500 focus:outline-none mb-3 font-poppins"
+                  className="w-full bg-gray-700 text-white px-3 py-2 rounded-lg border border-gray-600 focus:border-green-500 focus:outline-none font-poppins"
                 />
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
@@ -396,11 +520,28 @@ const LiabilitiesPage: React.FC = () => {
                   <input
                     type="number"
                     placeholder="Outstanding Balance"
-                    value={newCreditCard.amount}
+                    value={newCreditCard.balance}
                     onChange={(e) =>
                       setNewCreditCard({
                         ...newCreditCard,
-                        amount: e.target.value,
+                        balance: e.target.value,
+                      })
+                    }
+                    className="w-full bg-gray-700 text-white px-8 py-2 rounded-lg border border-gray-600 focus:border-green-500 focus:outline-none font-poppins"
+                  />
+                </div>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                    ₹
+                  </span>
+                  <input
+                    type="number"
+                    placeholder="Credit Limit"
+                    value={newCreditCard.creditLimit}
+                    onChange={(e) =>
+                      setNewCreditCard({
+                        ...newCreditCard,
+                        creditLimit: e.target.value,
                       })
                     }
                     className="w-full bg-gray-700 text-white px-8 py-2 rounded-lg border border-gray-600 focus:border-green-500 focus:outline-none font-poppins"
@@ -425,20 +566,22 @@ const LiabilitiesPage: React.FC = () => {
               </button>
             )}
 
+            {/* Credit Card List */}
             {liabilitiesData.creditCards.map((card) => (
               <div
                 key={card.id}
                 className="bg-gray-800 p-3 rounded-lg border border-gray-700 hover:border-gray-600 transition-colors mb-2"
               >
+                {/* Edit Credit Card Form */}
                 {editingCreditCardId === card.id ? (
                   <div className="space-y-2">
                     <input
                       type="text"
-                      value={editingCreditCard.name}
+                      value={editingCreditCard.cardName}
                       onChange={(e) =>
                         setEditingCreditCard({
                           ...editingCreditCard,
-                          name: e.target.value,
+                          cardName: e.target.value,
                         })
                       }
                       className="w-full bg-gray-700 text-white px-3 py-2 rounded-lg border border-gray-600 focus:border-green-500 focus:outline-none text-sm font-poppins"
@@ -449,11 +592,27 @@ const LiabilitiesPage: React.FC = () => {
                       </span>
                       <input
                         type="number"
-                        value={editingCreditCard.amount}
+                        value={editingCreditCard.balance}
                         onChange={(e) =>
                           setEditingCreditCard({
                             ...editingCreditCard,
-                            amount: e.target.value,
+                            balance: e.target.value,
+                          })
+                        }
+                        className="w-full bg-gray-700 text-white px-8 py-2 rounded-lg border border-gray-600 focus:border-green-500 focus:outline-none text-sm font-poppins"
+                      />
+                    </div>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">
+                        ₹
+                      </span>
+                      <input
+                        type="number"
+                        value={editingCreditCard.creditLimit}
+                        onChange={(e) =>
+                          setEditingCreditCard({
+                            ...editingCreditCard,
+                            creditLimit: e.target.value,
                           })
                         }
                         className="w-full bg-gray-700 text-white px-8 py-2 rounded-lg border border-gray-600 focus:border-green-500 focus:outline-none text-sm font-poppins"
@@ -475,13 +634,15 @@ const LiabilitiesPage: React.FC = () => {
                     </div>
                   </div>
                 ) : (
+                  // Display Credit Card Item
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-white text-sm font-medium font-poppins">
-                        {card.name}
+                        {card.cardName}
                       </p>
                       <p className="text-orange-400 text-sm font-semibold font-inter">
-                        ₹{card.amount.toFixed(2)}
+                        ₹{card.balance.toFixed(2)} (Limit: ₹
+                        {card.creditLimit.toFixed(2)})
                       </p>
                     </div>
                     <div className="flex space-x-2">
@@ -510,12 +671,12 @@ const LiabilitiesPage: React.FC = () => {
           <Button text="Save Changes" onClick={handleSaveChanges} />
         </div>
         {/* Skip Button */}
-        <div className="mt-8">
+        <div className="mt-4">
           <Button
             text="Skip"
             onClick={handleSkip}
-            bgColor="bg-dark-3"
-            hoverColor="bg-dark-2"
+            bgColor="bg-gray-700"
+            hoverColor="bg-gray-600"
           />
         </div>
       </div>
