@@ -108,6 +108,11 @@ const userSchema = new mongoose.Schema({
   creditScore: {
     type: Number,
   },
+  insights: {
+    type: [
+      String,
+    ]
+  },
 },{
     timestamps: true
 });

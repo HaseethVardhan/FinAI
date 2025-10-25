@@ -1,30 +1,68 @@
 import { TrendingUp, TrendingDown, IndianRupee, Percent } from "lucide-react";
 import PieChart from "./PieChart";
-
-const dummyData = {
-  totalIncome: 255000,
-  totalExpenses: 56111,
-  netSavings: 198889,
-  expensesByCategory: [
-    { name: "Food", value: 5000 },
-    { name: "Transport", value: 51111 },
-  ],
-  expensesTable: [
-    { category: "Transport", amount: 51111, percentage: 91.09 },
-    { category: "Food", amount: 5000, percentage: 8.91 },
-  ],
-  incomesByCategory: [
-    { name: "Salary", value: 250000 },
-    { name: "Other", value: 5000 },
-  ],
-  incomesTable: [
-    { category: "Salary", amount: 250000, percentage: 98.04 },
-    { category: "Other", amount: 5000, percentage: 1.96 },
-  ],
-};
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 export default function Dashboard() {
-  const savingRate = (dummyData.netSavings / dummyData.totalIncome) * 100;
+  const [financialData, setFinancialData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const apiData = await axios.post(
+          `${import.meta.env.VITE_BASE_URL}/user/getDashboardSummary`,
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        
+        if (apiData.status === 200) {
+          setFinancialData(apiData.data.data);
+        } else {
+          throw new Error(apiData.data.message || "Failed to fetch data");
+        }
+      } catch (err) {
+        console.error("Error fetching data:", err);
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []); // Empty dependency array means this runs once on mount
+
+  if (isLoading) {
+    return (
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-8 bg-gray-50 min-h-screen">
+        <div className="text-2xl font-medium text-gray-700">
+          Loading financial data...
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-8 bg-gray-50 min-h-screen">
+        <div className="text-2xl font-medium text-red-600">Error: {error}</div>
+      </div>
+    );
+  }
+
+  if (!financialData) {
+    return null;
+  }
+
+  const savingRate =
+    (financialData.netSavings / financialData.totalIncome) * 100;
 
   return (
     <div className="flex-1 overflow-y-auto p-6 sm:p-8 bg-gray-50 min-h-screen">
@@ -38,17 +76,17 @@ export default function Dashboard() {
           {[
             {
               title: "Total Income",
-              value: `₹${dummyData.totalIncome.toLocaleString()}`,
+              value: `₹${financialData.totalIncome.toLocaleString()}`,
               icon: <TrendingUp className="w-5 h-5 text-green-500" />,
             },
             {
               title: "Total Expenses",
-              value: `₹${dummyData.totalExpenses.toLocaleString()}`,
+              value: `₹${financialData.totalExpenses.toLocaleString()}`,
               icon: <TrendingDown className="w-5 h-5 text-red-500" />,
             },
             {
               title: "Net Savings",
-              value: `₹${dummyData.netSavings.toLocaleString()}`,
+              value: `₹${financialData.netSavings.toLocaleString()}`,
               icon: <IndianRupee className="w-5 h-5 text-blue-500" />,
             },
             {
@@ -81,7 +119,7 @@ export default function Dashboard() {
           </h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
             <div className="flex justify-center">
-              <PieChart data={dummyData.incomesByCategory} />
+              <PieChart data={financialData.incomesByCategory} />
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -100,7 +138,7 @@ export default function Dashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {dummyData.incomesTable.map((item, index) => (
+                  {financialData.incomesTable.map((item, index) => (
                     <tr
                       key={index}
                       className="border-b border-gray-100 hover:bg-gray-50 transition"
@@ -109,7 +147,7 @@ export default function Dashboard() {
                         {index + 1}
                       </td>
                       <td className="py-3 px-4 text-sm text-gray-800">
-                        {item.category}
+                        {item.source}
                       </td>
                       <td className="py-3 px-4 text-sm text-gray-800 text-right font-medium">
                         ₹{item.amount.toLocaleString()}
@@ -132,7 +170,7 @@ export default function Dashboard() {
           </h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
             <div className="flex justify-center">
-              <PieChart data={dummyData.expensesByCategory} />
+              <PieChart data={financialData.expensesByCategory} />
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -151,7 +189,7 @@ export default function Dashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {dummyData.expensesTable.map((item, index) => (
+                  {financialData.expensesTable.map((item, index) => (
                     <tr
                       key={index}
                       className="border-b border-gray-100 hover:bg-gray-50 transition"
@@ -185,25 +223,12 @@ export default function Dashboard() {
             <h2 className="text-2xl font-bold text-gray-800">AI Insights</h2>
           </div>
           <ul className="space-y-3 text-gray-700">
-            <li className="flex items-start gap-3">
+            {financialData.insights.map((insight, index) => (
+              <li key={index} className="flex items-start gap-3">
               <span className="w-2 h-2 bg-blue-500 rounded-full mt-2"></span>
-              Your saving rate of {savingRate.toFixed(2)}% is excellent — above
-              the recommended 20%.
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="w-2 h-2 bg-blue-500 rounded-full mt-2"></span>
-              Transport expenses account for 91% of total spending. Try reducing
-              this category.
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="w-2 h-2 bg-blue-500 rounded-full mt-2"></span>
-              Income sources are healthy with a strong primary salary stream.
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="w-2 h-2 bg-blue-500 rounded-full mt-2"></span>
-              Consider setting aside an emergency fund for 3–6 months of
-              expenses.
-            </li>
+              {insight}
+              </li>
+            ))}
           </ul>
         </div>
       </div>

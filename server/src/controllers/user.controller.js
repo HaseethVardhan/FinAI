@@ -544,19 +544,30 @@ const getDashboardSummary = asyncHandler(async (req, res) => {
 
   const incomesByCategory =
     incomeData?.sources?.map((category) => ({
-      name: category.name,
+      name: category.type,
       value: category.amount,
     })) || [];
 
   const incomesTable =
     incomeData?.sources?.map((source) => ({
-      source: source.name,
+      source: source.type,
       amount: source.amount,
       percentage:
         totalIncome > 0
           ? parseFloat(((source.amount / totalIncome) * 100).toFixed(2))
           : 0,
     })) || [];
+
+    let insights = [];
+    if (!user.insights || user.insights.length === 0) {
+      const prompt = "Analyze user's financial data and generate exactly 5 numbered financial improvement points. Do not use any markdown, formatting, or asterisks. Keep it plain text and direct. Start each point with just a number and period, like: 1. Point";
+      const aiResponse = await reply(prompt, user._id);
+      insights = aiResponse.split('\n').filter(point => point.trim());
+      user.insights = insights;
+      await user.save({ validateModifiedOnly: true });
+    } else {
+      insights = user.insights;
+    }
 
   const summary = {
     totalIncome,
@@ -568,6 +579,7 @@ const getDashboardSummary = asyncHandler(async (req, res) => {
     expensesTable,
     incomesByCategory,
     incomesTable,
+    insights
   };
 
   return res
