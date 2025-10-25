@@ -72,9 +72,9 @@ const updateIncomeDetails = asyncHandler(async (req, res) => {
     const newIncomeIds = [];
 
     for (const detail of incomeDetails) {
-      if (detail.type && detail.amount) {
+      if (detail.name && detail.amount) {
         const newIncome = new Income({
-          type: detail.type,
+          type: detail.name,
           amount: detail.amount,
         });
         const savedDoc = await newIncome.save();

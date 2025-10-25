@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
 
 const investmentSchema = new mongoose.Schema({
-  type: { type: String, required: true },
-  value: { type: Number, required: true }
+  name: { type: String, required: true },
+  amount: { type: Number, required: true }
 });
 
 export const Investment = mongoose.model("Investment", investmentSchema);

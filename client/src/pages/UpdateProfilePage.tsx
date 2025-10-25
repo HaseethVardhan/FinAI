@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom"; // ✅ Import navigate
 import Button from "../uiComponents/Button";
+import axios from "axios";
 
 const ProfilePage: React.FC = () => {
   const navigate = useNavigate(); // ✅ hook for navigation
@@ -30,7 +31,7 @@ const ProfilePage: React.FC = () => {
     });
   };
 
-  const handleSaveChanges = () => {
+  const handleSaveChanges = async () => {
     let newErrors = { username: "", age: "" };
     let isValid = true;
 
@@ -65,7 +66,21 @@ const ProfilePage: React.FC = () => {
 
     console.log("Profile Data:", formData);
 
-    // ✅ Navigate to IncomeSourcesPage
+    const response = await axios.post(
+      `${import.meta.env.VITE_BASE_URL}/user/updateUserNameAndAge`,
+      {
+        username: formData.username,
+        age: formData.age,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+
+    console.log(response);
+
     navigate("/income-sources", { replace: true });
   };
 
@@ -142,7 +157,7 @@ const ProfilePage: React.FC = () => {
           <Button
             text="Save Changes"
             onClick={handleSaveChanges}
-            color="bg-primary"
+            bgColor="bg-primary"
           />
         </div>
       </div>

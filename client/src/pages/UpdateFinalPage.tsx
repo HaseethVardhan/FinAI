@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { PiggyBank, TrendingUp } from "lucide-react";
 import Button from "../uiComponents/Button";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const FinalPage: React.FC = () => {
   const [finalData, setFinalData] = useState({
@@ -21,15 +23,33 @@ const FinalPage: React.FC = () => {
     }
   };
 
-  const handleSaveChanges = () => {
+  const navigate = useNavigate();
+
+  const handleSaveChanges = async() => {
     if (!finalData.emergencyFund && !finalData.creditScore) {
       setError("Please fill at least one field before saving.");
       return;
     }
     setError("");
-    console.log("Final Data:", finalData);
+
+    const response = await axios.post(
+      `${import.meta.env.VITE_BASE_URL}/user/updateOtherDetails`,
+      {
+        emergencyFund: finalData.emergencyFund,
+        creditScore: finalData.creditScore,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    console.log(response);
+    navigate("/");
   };
-  const handleSkip = () => {};
+  const handleSkip = () => {
+    navigate("/");
+  };
   return (
     <div className="min-h-screen bg-dark-bg flex items-center justify-center px-4 font-poppins">
       <div className="max-w-md w-full mb-10 mt-10">

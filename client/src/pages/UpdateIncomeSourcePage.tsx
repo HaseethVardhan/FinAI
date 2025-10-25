@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { IndianRupee, Plus, Trash2, Edit2 } from "lucide-react";
 import Button from "../uiComponents/Button";
-import { useNavigate } from "react-router-dom"; // ✅ Import navigate
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 interface IncomeSource {
   id: string;
@@ -99,15 +100,29 @@ const IncomeSourcesPage: React.FC = () => {
     setEditingSource({ name: "", amount: "" });
   };
 
-  const handleSaveChanges = () => {
+  const handleSaveChanges = async () => {
     if (incomeSources.length === 0) {
       setError("⚠️ Please add at least one income source before saving.");
       return;
     }
-    setError(""); // clear error
+    setError("");
     console.log("Income Sources:", incomeSources);
 
-    navigate("/expenses", { replace: true }); // ✅ Navigate to ExpensesPage
+    const response = await axios.post(
+      `${import.meta.env.VITE_BASE_URL}/user/updateIncomeDetails`,
+      {
+        incomeDetails: incomeSources,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+
+    console.log(response);
+
+    navigate("/expenses", { replace: true });
   };
 
   return (
