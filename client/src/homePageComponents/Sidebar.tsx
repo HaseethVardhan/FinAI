@@ -27,7 +27,7 @@ export default function Sidebar({
         onClick={onToggle}
         className="fixed top-4 left-4 z-50 p-2 rounded-lg bg-white shadow-md hover:bg-gray-50 transition-colors"
       >
-        <Menu className="w-6 h-6 text-gray-700" />
+        <Menu className="w-6 h-6 text-gray-700 " />
       </button>
 
       {/* Animated Sidebar */}
@@ -39,10 +39,10 @@ export default function Sidebar({
       >
         {/* Header */}
         <div className="p-4 flex items-center gap-3 border-b border-gray-800">
-          <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-cyan-500 rounded-lg flex items-center justify-center">
+          {/*<div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-cyan-500 rounded-lg flex items-center justify-center">
             <Sparkles className="w-5 h-5 text-white" />
-          </div>
-          <span className="text-xl font-semibold">FinanceAI</span>
+          </div>*/}
+          <span className="text-xl font-semibold ml-12 mt-2">FinanceAI</span>
         </div>
 
         {/* Navigation */}
