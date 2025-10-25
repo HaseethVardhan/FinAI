@@ -48,44 +48,6 @@ export default function Footer() {
           </div>
 
           <div>
-            <h3 className="text-white font-semibold mb-4">Product</h3>
-            <ul className="space-y-3">
-              <li>
-                <a
-                  href="#features"
-                  className="text-slate-400 hover:text-white transition-colors"
-                >
-                  Features
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#pricing"
-                  className="text-slate-400 hover:text-white transition-colors"
-                >
-                  Pricing
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-slate-400 hover:text-white transition-colors"
-                >
-                  Security
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-slate-400 hover:text-white transition-colors"
-                >
-                  Roadmap
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          <div>
             <h3 className="text-white font-semibold mb-4">Company</h3>
             <ul className="space-y-3">
               <li>
@@ -94,22 +56,6 @@ export default function Footer() {
                   className="text-slate-400 hover:text-white transition-colors"
                 >
                   About Us
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-slate-400 hover:text-white transition-colors"
-                >
-                  Blog
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-slate-400 hover:text-white transition-colors"
-                >
-                  Careers
                 </a>
               </li>
               <li>
@@ -128,26 +74,6 @@ export default function Footer() {
           <p className="text-slate-400 text-sm">
             © 2025 FinAI. All rights reserved.
           </p>
-          <div className="flex items-center gap-6 text-sm">
-            <a
-              href="#"
-              className="text-slate-400 hover:text-white transition-colors"
-            >
-              Privacy Policy
-            </a>
-            <a
-              href="#"
-              className="text-slate-400 hover:text-white transition-colors"
-            >
-              Terms of Service
-            </a>
-            <a
-              href="#"
-              className="text-slate-400 hover:text-white transition-colors"
-            >
-              Cookie Policy
-            </a>
-          </div>
         </div>
       </div>
     </footer>

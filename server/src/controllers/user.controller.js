@@ -487,7 +487,7 @@ const getAssets = asyncHandler(async (req, res) => {
   const assets = await getAssetsService(req.user);
   return res
   .status(200)
-  .response(
+  .json(
     new ApiResponse(
       200,
       assets,
@@ -500,7 +500,7 @@ const getLiabilities = asyncHandler(async (req, res) => {
   const liabilities = await getLiabilitiesService(req.user);
   return res
   .status(200)
-  .response(
+  .json(
     new ApiResponse(
       200,
       liabilities,
@@ -512,7 +512,7 @@ const getLiabilities = asyncHandler(async (req, res) => {
 const getInsurance = asyncHandler(async (req, res) => {
   return res
   .status(200)
-  .response(
+  .json(
     new ApiResponse(
       200,
       req.user.insurance,
@@ -525,7 +525,7 @@ const getDependents = asyncHandler(async (req, res) => {
   const dependents = await getDependentsService(req.user);
   return res
   .status(200)
-  .response(
+  .json(
     new ApiResponse(
       200,
       dependents,
@@ -543,12 +543,119 @@ const getOtherDetails = asyncHandler(async (req, res) => {
   }
   return res
   .status(200)
-  .response(
+  .json(
     new ApiResponse(
       200,
       otherDetails,
       "OtherDetails fetched successfully"
     )
+  )
+})
+
+const getDashboardSummary = asyncHandler(async (req, res) => {
+  const user = req.user;
+  const [incomeData, expensesData, assetsData, liabilitiesData] =
+    await Promise.all([
+      getIncomeService(user),
+      getExpensesService(user),
+      getAssetsService(user),
+      getLiabilitiesService(user),
+    ]);
+
+  const totalIncome =
+    incomeData?.sources?.reduce((acc, source) => acc + source.amount, 0) || 0;
+  const totalExpenses =
+    expensesData?.categories?.reduce(
+      (acc, category) => acc + category.amount,
+      0
+    ) || 0;
+
+  const totalAssets =
+    (assetsData?.investments?.reduce(
+      (acc, asset) => acc + asset.currentValue,
+      0
+    ) || 0) +
+    (assetsData?.otherAssets?.reduce(
+      (acc, asset) => acc + asset.currentValue,
+      0
+    ) || 0);
+
+  const totalLiabilities =
+    (liabilitiesData?.loans?.reduce(
+      (acc, loan) => acc + loan.outstandingBalance,
+      0
+    ) || 0) +
+    (liabilitiesData?.creditCards?.reduce(
+      (acc, card) => acc + card.outstandingBalance,
+      0
+    ) || 0);
+
+
+  const netSavings = totalIncome - totalExpenses;
+  const netWorth = totalAssets - totalLiabilities;
+
+  const expensesByCategory =
+    expensesData?.categories?.map((category) => ({
+      name: category.name,
+      value: category.amount,
+    })) || [];
+
+  const expensesTable =
+    expensesData?.categories?.map((category) => ({
+      category: category.name,
+      amount: category.amount,
+      percentage:
+        totalExpenses > 0
+          ? parseFloat(((category.amount / totalExpenses) * 100).toFixed(2))
+          : 0,
+    })) || [];
+
+    const incomesByCategory =
+    incomeData?.sources?.map((category) => ({
+      name: category.name,
+      value: category.amount,
+    })) || [];
+
+  const incomesTable =
+    incomeData?.sources?.map((source) => ({
+      source: source.name,
+      amount: source.amount,
+      percentage:
+        totalIncome > 0
+          ? parseFloat(((source.amount / totalIncome) * 100).toFixed(2))
+          : 0,
+    })) || [];
+
+  const summary = {
+    totalIncome,
+    totalExpenses,
+    netSavings,
+    netWorth,
+    totalLiabilities,
+    expensesByCategory, 
+    expensesTable,
+    incomesByCategory,
+    incomesTable,
+  };
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, summary, "Financial summary fetched successfully")
+    );
+});
+
+const changeStatus = asyncHandler(async (req, res) => {
+  const user = req.user;
+
+  user.status = "completed";
+
+  await user.save({ validateModifiedOnly: true });
+
+  return res
+  .status(200)
+  .json(
+    new ApiResponse(200, {}, "Success")
   )
 })
 
@@ -568,5 +675,7 @@ export {
   getLiabilities,
   getInsurance,
   getDependents,
-  getOtherDetails
+  getOtherDetails,
+  getDashboardSummary,
+  changeStatus
 };

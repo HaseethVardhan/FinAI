@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { body } from "express-validator";
 import verifyUser from "../middleware/auth.middleware.js"
-import { getAssets, getDependents, getExpenseDetails, getIncomeDetails, getInsurance, getLiabilities, getOtherDetails, getUserNameAndAge, updateAssets, updateDependents, updateExpenseDetails, updateIncomeDetails, updateInsurance, updateLiabilities, updateOtherDetails, updateUserNameAndAge } from "../controllers/user.controller.js";
+import { changeStatus, getAssets, getDashboardSummary, getDependents, getExpenseDetails, getIncomeDetails, getInsurance, getLiabilities, getOtherDetails, getUserNameAndAge, updateAssets, updateDependents, updateExpenseDetails, updateIncomeDetails, updateInsurance, updateLiabilities, updateOtherDetails, updateUserNameAndAge } from "../controllers/user.controller.js";
 
 const router = Router();
 
@@ -44,5 +44,9 @@ router.route("/getInsurance").post(verifyUser, getInsurance);
 router.route("/getDependents").post(verifyUser, getDependents);
 
 router.route("/getOtherDetails").post(verifyUser, getOtherDetails);
+
+router.route("/getDashboardSummary").post(verifyUser, getDashboardSummary)
+
+router.route("/changeStatus").post(verifyUser, changeStatus)
 
 export default router;

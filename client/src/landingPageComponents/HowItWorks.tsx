@@ -33,7 +33,7 @@ const steps = [
 
 export default function HowItWorks() {
   return (
-    <section id="how-it-works" className="py-24 px-4 sm:px-6 lg:px-8 relative">
+    <section id="how-it-works" className="py-24 px-4 sm:px-6 lg:px-8 relative font-poppins">
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-emerald-500/5 to-transparent" />
 
       <div className="max-w-7xl mx-auto relative">
