@@ -45,7 +45,7 @@ const Home: React.FC = () => {
       >
         {/* Top Bar for Title */}
         <div className="flex justify-between items-center px-6 py-4 bg-white border-b border-gray-200 shadow-sm sticky top-0 z-10">
-          <h1 className="text-2xl font-semibold text-gray-800 tracking-tight">
+          <h1 className="text-2xl font-semibold text-gray-800 tracking-tight ml-10 mt-2">
             {currentView === "chat" ? "Chat Assistant" : "Finance Dashboard"}
           </h1>
         </div>

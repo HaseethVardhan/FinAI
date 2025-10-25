@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown, DollarSign, Percent } from "lucide-react";
+import { TrendingUp, TrendingDown, IndianRupee, Percent } from "lucide-react";
 import PieChart from "./PieChart";
 
 const dummyData = {
@@ -49,7 +49,7 @@ export default function Dashboard() {
             {
               title: "Net Savings",
               value: `₹${dummyData.netSavings.toLocaleString()}`,
-              icon: <DollarSign className="w-5 h-5 text-blue-500" />,
+              icon: <IndianRupee className="w-5 h-5 text-blue-500" />,
             },
             {
               title: "Saving Rate",

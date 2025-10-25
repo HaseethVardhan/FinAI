@@ -18,6 +18,32 @@ input[type="number"] {
   --font-inter: "Inter", sans-serif;
 }
 
+@layer theme {
+  :root {
+    --font-poppins: "Poppins", sans-serif;
+    --font-inter: "Inter", sans-serif;
+  }
+}
+
+/* Apply fonts globally */
+body {
+  font-family: var(--font-inter);
+  background-color: #f9fafb; /* subtle background for neat UI */
+  color: #1f2937; /* text-gray-800 */
+  margin: 0;
+  padding: 0;
+}
+
+/* Use Poppins for all headings */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-poppins);
+}
+
 @theme {
   /* --color-primary: #FF5733; */
   /* --color-secondary: #33C7FF; */
