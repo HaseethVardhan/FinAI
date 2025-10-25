@@ -1,10 +1,21 @@
 import React from "react";
+import Navigation from "../landingPageComponents/Navigation";
+import Hero from "../landingPageComponents/Hero";
+import Features from "../landingPageComponents/Features";
+import HowItWorks from "../landingPageComponents/HowItWorks";
+//import CTA from "../landingPageComponents/CTA";
+import Footer from "../landingPageComponents/Footer";
 
 const Landing: React.FC = () => {
   return (
-    <>
-      <div>Landing Page</div>
-    </>
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      <Navigation />
+      <Hero />
+      <Features />
+      <HowItWorks />
+      {/*<CTA />*/}
+      <Footer />
+    </div>
   );
 };
 
