@@ -1,7 +1,8 @@
 import { Router } from "express";
 import { body } from "express-validator";
 import verifyUser from "../middleware/auth.middleware.js"
-import { changeStatus, newPrompt, getAssets, getDashboardSummary, getDependents, getExpenseDetails, getIncomeDetails, getInsurance, getLiabilities, getOtherDetails, getUserNameAndAge, updateAssets, updateDependents, updateExpenseDetails, updateIncomeDetails, updateInsurance, updateLiabilities, updateOtherDetails, updateUserNameAndAge, loadConversation, getAllConversations } from "../controllers/user.controller.js";
+import { changeStatus, newPrompt, getAssets, getDashboardSummary, getDependents, getExpenseDetails, getIncomeDetails, getInsurance, getLiabilities, getOtherDetails, getUserNameAndAge, updateAssets, updateDependents, updateExpenseDetails, updateIncomeDetails, updateInsurance, updateLiabilities, updateOtherDetails, updateUserNameAndAge, loadConversation, getAllConversations, createGoals } from "../controllers/user.controller.js";
+import { getGoals } from "../controllers/user.controller.js";
 
 const router = Router();
 
@@ -54,5 +55,9 @@ router.route('/newPrompt').post(verifyUser, newPrompt);
 router.route('/loadConversations').post(verifyUser, loadConversation);
 
 router.route('/getAllConversations').post(verifyUser, getAllConversations);
+
+router.route('/createGoals').post(verifyUser, createGoals)
+
+router.route('/getGoals').post(verifyUser, getGoals)
 
 export default router;

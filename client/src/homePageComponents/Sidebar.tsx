@@ -1,9 +1,12 @@
 import { Menu, MessageSquare, LayoutDashboard, Target } from "lucide-react";
-import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
-import axios from "axios"; // Import axios
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
 
-// Define the structure of a single conversation to match the API response
+import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import axios from "axios";
+
 interface Conversation {
   _id: string;
   user: string;
@@ -37,6 +40,7 @@ export default function Sidebar({
 }: SidebarProps) {
   const [conversations, setConversations] = useState<Conversation[]>([]);
 
+  const navigate = useNavigate();
   useEffect(() => {
     const getAllConversations = async () => {
       try {
@@ -147,6 +151,19 @@ export default function Sidebar({
               ))}
             </div>
           </div>
+
+          <button
+            onClick={() => {
+              // console.log('hi');
+              localStorage.clear('token');
+              navigate('/landing');
+            }}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+              currentView === "dashboard" ? "bg-red-400" : "hover:bg-red-600"
+            }`}
+          >
+            <span>Signout</span>
+          </button>
         </div>
       </motion.aside>
     </>

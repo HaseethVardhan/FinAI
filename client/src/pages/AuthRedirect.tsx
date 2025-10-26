@@ -47,7 +47,7 @@ const AuthRedirect: React.FC = () => {
     };
 
     verifyUserAuth();
-  }, [token]);
+  }, []);
 
   return <div>{loading && <p>Loading...</p>}</div>;
 };
