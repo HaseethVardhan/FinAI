@@ -4,14 +4,11 @@
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" }
   ],
-  "exclude": [
-    "src"
-  ],
   "compilerOptions": {
     "strict": false,
     "noImplicitAny": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "skipLibCheck": true,
+    "skipLibCheck": true
   }
 }
