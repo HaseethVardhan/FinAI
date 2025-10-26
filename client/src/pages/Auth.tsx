@@ -18,19 +18,19 @@ const Auth: React.FC = () => {
   };
 
   return (
-    <div>
+    <div className="w-full h-screen flex flex-row justify-center items-center">
       {mode === "signUp" && (
         <button
-          className="flex flex-row w-[90%] bg-[#333333] h-10 rounded-lg gap-3 items-center justify-center"
+          className="flex flex-row bg-[#333333] h-10 rounded-lg gap-3 p-10 items-center justify-center"
           onClick={googleAuth}
         >
-          <div className="flex items-center justify-end ">
+          <div className="flex items-center justify-between">
             <img
               className="w-4 "
               src="https://www.gstatic.com/marketing-cms/assets/images/d5/dc/cfe9ce8b4425b410b49b7f2dd3f3/g.webp=s96-fcrop64=1,00000000ffffffff-rw"
             />
           </div>
-          <div className="flex items-center justify-center">
+          <div className="flex items-center justify-center text-white">
             Continue with Google
           </div>
         </button>
