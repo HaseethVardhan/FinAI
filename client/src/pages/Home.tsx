@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import Sidebar from "../homePageComponents/Sidebar";
 import ChatInterface from "../homePageComponents/ChatInterface";
 import Dashboard from "../homePageComponents/Dashboard";
+import Goals from "../homePageComponents/Goals";
 
 const Home: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -54,6 +55,7 @@ const Home: React.FC = () => {
         <div className="flex-1 flex justify-center items-center p-4 sm:p-6 md:p-8 overflow-auto">
           {currentView === "chat" && <ChatInterface />}
           {currentView === "dashboard" && <Dashboard />}
+          {currentView === "goals" && <Goals />}
         </div>
       </motion.main>
     </div>
