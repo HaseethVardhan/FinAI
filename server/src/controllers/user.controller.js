@@ -2,6 +2,7 @@ import { validationResult } from "express-validator";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { Income } from "../models/income.model.js";
 import { Loan } from "../models/loan.model.js";
+import {Goal} from "../models/goal.model.js"
 import { CreditCard } from "../models/creditcard.model.js";
 import { Dependent } from "../models/dependent.model.js";
 import { Expense } from "../models/expense.model.js";
@@ -22,6 +23,7 @@ import {
   getDependentsService,
   getEmergencyFundService,
   getCreditScoreService,
+  getGoalsService
 } from "../services/user.services.js";
 
 const updateUserNameAndAge = asyncHandler(async (req, res) => {
@@ -735,6 +737,79 @@ const loadConversation = asyncHandler(async (req,res) => {
   }
 })
 
+const getGoals = asyncHandler(async (req, res) => {
+  const goals = await getGoalsService(req.user);
+  // console.log(goals);
+  return res.status(200).json(
+    new ApiResponse(200, goals, "Goals fetched successfully")
+  );
+})
+
+const createGoals = asyncHandler(async (req, res) => {
+  const { goals } = req.body;
+  const user = req.user;
+
+  try {
+    if (!Array.isArray(goals)) {
+      return res.status(400).json(
+        new ApiResponse(400, null, "Goals must be an array.")
+      );
+    }
+
+    // Basic validation for each goal entry
+    const invalid = goals.find(g =>
+      !g ||
+      typeof g.goalType !== "string" ||
+      g.goalType.trim() === "" ||
+      (g.targetAmount === undefined || g.targetAmount === null) ||
+      isNaN(Number(g.targetAmount)) ||
+      !g.deadline ||
+      isNaN(new Date(g.deadline).getTime())
+    );
+    if (invalid) {
+      return res.status(400).json(
+        new ApiResponse(400, null, "Each goal must include goalType (string), targetAmount (number) and deadline (valid date).")
+      );
+    }
+
+    // If user had old goals, delete their Goal documents to avoid orphans
+    const oldGoalIds = (user.goals || []).filter(Boolean);
+    if (oldGoalIds.length > 0) {
+      await Goal.deleteMany({ _id: { $in: oldGoalIds } });
+      user.goals = [];
+    }
+
+    // Normalize and prepare documents to insert
+    const goalDocsToInsert = goals.map(g => ({
+      goalType: g.goalType,
+      targetAmount: Number(g.targetAmount),
+      currentAmount: g.currentAmount !== undefined && g.currentAmount !== null ? Number(g.currentAmount) : 0,
+      deadline: new Date(g.deadline),
+      priority: g.priority // will be validated by schema enum if present
+    }));
+
+    // Insert many goals and get the created docs
+    const createdGoals = await Goal.insertMany(goalDocsToInsert);
+
+    // Attach the new goal ObjectIds to the user
+    user.goals = createdGoals.map(g => g._id);
+
+    // Save user (only modified fields validated)
+    await user.save({ validateModifiedOnly: true });
+
+    // Optionally populate before sending back (here we return createdGoals directly)
+    return res.status(200).json(
+      new ApiResponse(200, createdGoals, "Goals updated successfully")
+    );
+
+  } catch (error) {
+    console.error("createGoals error:", error);
+    return res.status(500).json(
+      new ApiResponse(500, {}, "Internal error occurred while updating goals")
+    );
+  }
+});
+
 export {
   updateUserNameAndAge,
   updateIncomeDetails,
@@ -757,4 +832,6 @@ export {
   newPrompt,
   getAllConversations,
   loadConversation,
+  getGoals,
+  createGoals
 };
