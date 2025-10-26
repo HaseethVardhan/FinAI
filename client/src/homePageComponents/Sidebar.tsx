@@ -1,4 +1,4 @@
-import { Menu, MessageSquare, LayoutDashboard } from "lucide-react";
+import { Menu, MessageSquare, LayoutDashboard, Target } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import axios from "axios"; // Import axios
@@ -59,7 +59,7 @@ export default function Sidebar({
     };
 
     getAllConversations();
-  }, []); 
+  }, []);
 
   const handleChatNavigation = (conversationId: string) => {
     onNavigate("chat");
@@ -121,7 +121,15 @@ export default function Sidebar({
             <LayoutDashboard className="w-5 h-5" />
             <span>Dashboard</span>
           </button>
-
+          <button
+            onClick={() => onNavigate("goals")}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+              currentView === "goals" ? "bg-gray-800" : "hover:bg-gray-800"
+            }`}
+          >
+            <Target className="w-5 h-5" />
+            <span>Goals</span>
+          </button>
           {/* Chat History */}
           <div className="pt-6">
             <h3 className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">

@@ -22,9 +22,10 @@ export default function Dashboard() {
             },
           }
         );
-        
+
         if (apiData.status === 200) {
           setFinancialData(apiData.data.data);
+          console.log(apiData.data.data);
         } else {
           throw new Error(apiData.data.message || "Failed to fetch data");
         }
@@ -225,8 +226,8 @@ export default function Dashboard() {
           <ul className="space-y-3 text-gray-700">
             {financialData.insights.map((insight, index) => (
               <li key={index} className="flex items-start gap-3">
-              <span className="w-2 h-2 bg-blue-500 rounded-full mt-2"></span>
-              {insight}
+                <span className="w-2 h-2 bg-blue-500 rounded-full mt-2"></span>
+                {insight}
               </li>
             ))}
           </ul>
