@@ -1,5 +1,26 @@
-import { Menu, MessageSquare, LayoutDashboard, Sparkles } from "lucide-react";
+import { Menu, MessageSquare, LayoutDashboard } from "lucide-react";
 import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import axios from "axios"; // Import axios
+
+// Define the structure of a single conversation to match the API response
+interface Conversation {
+  _id: string;
+  user: string;
+  id: string;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
+// Define the structure of the API response
+interface ApiResponse {
+  statusCode: number;
+  message: string;
+  data: Conversation[];
+  success: boolean;
+}
 
 interface SidebarProps {
   isOpen: boolean;
@@ -14,11 +35,48 @@ export default function Sidebar({
   currentView,
   onNavigate,
 }: SidebarProps) {
-  const dummyChats = [
-    "TLE solution optimization",
-    "Flutter overview and details",
-    "Create WhatsApp group link",
-  ];
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+
+  useEffect(() => {
+    const getAllConversations = async () => {
+      try {
+        const response = await axios.post(
+          `${import.meta.env.VITE_BASE_URL}/user/getAllConversations`,
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+
+        if (response.data && response.data.success) {
+          setConversations(response.data.data);
+        }
+      } catch (error) {
+        console.error("Error fetching conversations:", error);
+      }
+    };
+
+    getAllConversations();
+  }, []); 
+
+  const handleChatNavigation = (conversationId: string) => {
+    onNavigate("chat");
+
+    const url = new URL(window.location.href);
+    url.searchParams.set("conversationId", conversationId);
+    // Update URL and refresh the page
+    window.location.href = url.toString();
+  };
+
+  // Function to handle "New Chat" button click
+  const handleNewChat = () => {
+    // Generate a new random UUID
+    const newConversationId = crypto.randomUUID();
+    // Use the existing navigation logic to update the URL
+    handleChatNavigation(newConversationId);
+  };
 
   return (
     <>
@@ -39,16 +97,13 @@ export default function Sidebar({
       >
         {/* Header */}
         <div className="p-4 flex items-center gap-3 border-b border-gray-800">
-          {/*<div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-cyan-500 rounded-lg flex items-center justify-center">
-            <Sparkles className="w-5 h-5 text-white" />
-          </div>*/}
-          <span className="text-xl font-semibold ml-12 mt-2">FinanceAI</span>
+          <span className="text-xl font-semibold ml-12 mt-2">FinAI</span>
         </div>
 
         {/* Navigation */}
         <div className="flex-1 overflow-y-auto p-4 space-y-2">
           <button
-            onClick={() => onNavigate("chat")}
+            onClick={handleNewChat}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
               currentView === "chat" ? "bg-gray-800" : "hover:bg-gray-800"
             }`}
@@ -73,12 +128,13 @@ export default function Sidebar({
               Chats
             </h3>
             <div className="space-y-1">
-              {dummyChats.map((chat, index) => (
+              {conversations.map((chat) => (
                 <button
-                  key={index}
+                  key={chat._id} // Use the unique _id for the key
+                  onClick={() => handleChatNavigation(chat.id)} // Set onClick to navigate
                   className="w-full px-4 py-2 text-sm text-left text-gray-300 hover:bg-gray-800 rounded-lg transition-colors truncate"
                 >
-                  {chat}
+                  {chat.title}
                 </button>
               ))}
             </div>

@@ -694,6 +694,47 @@ const newPrompt = asyncHandler(async (req, res) => {
 
 });
 
+const getAllConversations = asyncHandler(async (req, res) => {
+  try {
+    const conversations = await Conversation.find({
+      user: req.user._id
+    }).sort({ createdAt: -1 });
+
+    return res.status(200).json(
+      new ApiResponse(200, conversations, "Conversations fetched successfully")
+    );
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json(
+      new ApiResponse(500, {}, "Error fetching conversations")
+    );
+  }
+})
+
+const loadConversation = asyncHandler(async (req,res) => {
+  const {conversationId} = req.body;
+
+  try {
+    const conversation = await Conversation.findOne({
+      id: conversationId,
+      user: req.user._id
+    });
+
+    if (!conversation) {
+      return res.status(404).json(new ApiResponse(404, {}, "Conversation not found"));
+    }
+
+    const messages = await Message.find({
+      conversation: conversation._id
+    }).sort({ createdAt: 1 });
+
+    return res.status(200).json(new ApiResponse(200,messages, "Messages fetched successfully"));
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json(new ApiResponse(500, {}, "Error fetching messages"));
+  }
+})
+
 export {
   updateUserNameAndAge,
   updateIncomeDetails,
@@ -713,5 +754,7 @@ export {
   getOtherDetails,
   getDashboardSummary,
   changeStatus,
-  newPrompt
+  newPrompt,
+  getAllConversations,
+  loadConversation,
 };
