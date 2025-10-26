@@ -17,14 +17,6 @@ interface Conversation {
   __v: number;
 }
 
-// Define the structure of the API response
-interface ApiResponse {
-  statusCode: number;
-  message: string;
-  data: Conversation[];
-  success: boolean;
-}
-
 interface SidebarProps {
   isOpen: boolean;
   onToggle: () => void;
@@ -155,7 +147,7 @@ export default function Sidebar({
           <button
             onClick={() => {
               // console.log('hi');
-              localStorage.clear('token');
+              localStorage.clear();
               navigate('/landing');
             }}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
